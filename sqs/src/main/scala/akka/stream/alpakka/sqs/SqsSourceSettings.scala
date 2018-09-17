@@ -40,6 +40,20 @@ object SqsSourceSettings {
                       messageAttributeNames.asScala,
                       closeOnEmptyReceive)
 
+  def create(waitTimeSeconds: Int,
+             maxBufferSize: Int,
+             maxBatchSize: Int,
+             attributeNames: util.List[AttributeName],
+             messageAttributeNames: util.List[MessageAttributeName],
+             closeOnEmptyReceive: Boolean,
+             visibilityTimeoutSeconds: Integer): SqsSourceSettings =
+    SqsSourceSettings(waitTimeSeconds,
+      maxBufferSize,
+      maxBatchSize,
+      attributeNames.asScala,
+      messageAttributeNames.asScala,
+      closeOnEmptyReceive,
+      Some(visibilityTimeoutSeconds))
 }
 
 final case class SqsSourceSettings(
@@ -48,7 +62,8 @@ final case class SqsSourceSettings(
     maxBatchSize: Int,
     attributeNames: Seq[AttributeName] = Seq(),
     messageAttributeNames: Seq[MessageAttributeName] = Seq(),
-    closeOnEmptyReceive: Boolean = false
+    closeOnEmptyReceive: Boolean = false,
+    visibilityTimeoutSeconds: Option[Int] = None
 ) {
   require(maxBatchSize <= maxBufferSize, "maxBatchSize must be lower or equal than maxBufferSize")
   // SQS requirements
@@ -75,6 +90,10 @@ final case class SqsSourceSettings(
   def withCloseOnEmptyReceive(): SqsSourceSettings = copy(closeOnEmptyReceive = true)
 
   def withoutCloseOnEmptyReceive(): SqsSourceSettings = copy(closeOnEmptyReceive = false)
+
+  def withVisibilityTimeoutSeconds(visibilityTimeoutSeconds: Int): SqsSourceSettings = {
+    copy(visibilityTimeoutSeconds = Some(visibilityTimeoutSeconds))
+  }
 }
 
 /**

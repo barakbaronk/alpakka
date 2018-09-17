@@ -32,6 +32,7 @@ class SqsSourceSpec extends AsyncWordSpec with ScalaFutures with Matchers with D
         .withAttributes(SenderId, SentTimestamp)
         .withMessageAttributes(MessageAttributeName.create("bar.*"))
         .withCloseOnEmptyReceive
+        .withVisibilityTimeoutSeconds(15)
       //#SqsSourceSettings
 
       settings.maxBufferSize should be(100)
@@ -153,6 +154,20 @@ class SqsSourceSpec extends AsyncWordSpec with ScalaFutures with Matchers with D
         .take(1)
         .runWith(Sink.head)
         .map(_.getMessageAttributes.asScala shouldBe messageAttributes)
+    }
+
+    "stream a single batch from the queue with custom visibility timeout" taggedAs Integration in {
+      val queue = randomQueueUrl()
+      implicit val awsSqsClient = sqsClient
+
+      val settings = sqsSourceSettings.copy(visibilityTimeoutSeconds = Some(30))
+
+      sqsClient.sendMessage(queue, "alpakka")
+
+      SqsSource(queue, settings)
+        .take(1)
+        .runWith(Sink.seq)
+        .map(_ should have size 1)
     }
   }
 }

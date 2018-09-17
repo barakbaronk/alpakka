@@ -55,6 +55,7 @@ final class SqsSourceStage(queueUrl: String, settings: SqsSourceSettings)(implic
           .withMessageAttributeNames(settings.messageAttributeNames.map(_.name).asJava)
           .withMaxNumberOfMessages(settings.maxBatchSize)
           .withWaitTimeSeconds(settings.waitTimeSeconds)
+          .withVisibilityTimeout(settings.visibilityTimeoutSeconds.map(_.asInstanceOf[Integer]).orNull)
 
         sqsClient.receiveMessageAsync(
           request,
